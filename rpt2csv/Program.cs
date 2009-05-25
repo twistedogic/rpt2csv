@@ -43,18 +43,18 @@ namespace rpt2csv
 								string firstLine = reader.ReadLine();
 								string secondLine = reader.ReadLine();
 
-								int[] columnLengths = secondLine.Split(' ').Select(s=>s.Length).ToArray();
+								int[] columnLengths = secondLine.Split(' ').Select(s => s.Length).ToArray();
 								List<string> columnNames = new List<string>();
-								
+
 								int charNo = 0;
-								foreach(int columnLength in columnLengths)
+								foreach (int columnLength in columnLengths)
 								{
 									columnNames.Add(firstLine.Substring(charNo, Math.Min(columnLength, firstLine.Length - charNo)).Trim());
 									charNo += columnLength + 1;
 								}
 
 								WriteColumnNames(writer, columnNames);
-								
+
 								while (!reader.EndOfStream)
 								{
 									string line = reader.ReadLine();
@@ -66,6 +66,18 @@ namespace rpt2csv
 						}
 					}
 				}
+			}
+			catch (FileNotFoundException)
+			{
+				System.Console.Out.WriteLine(inputPath + " not found!");
+			}
+			catch (UnauthorizedAccessException)
+			{
+				System.Console.Out.WriteLine("You are not authorized to access this file.");
+			}
+			catch (ArgumentException)
+			{
+				System.Console.Out.WriteLine("Invalid filename.");
 			}
 			catch (Exception e)
 			{
