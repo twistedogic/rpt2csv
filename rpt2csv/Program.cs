@@ -43,31 +43,24 @@ namespace rpt2csv
 								string firstLine = reader.ReadLine();
 								string secondLine = reader.ReadLine();
 
-								string[] columns = secondLine.Split(' ');
+								int[] columnLengths = secondLine.Split(' ').Select(s=>s.Length).ToArray();
 								List<string> columnNames = new List<string>();
 								
 								int charNo = 0;
-								for (int i = 0; i < columns.Length; i++)
+								foreach(int columnLength in columnLengths)
 								{
-									columnNames.Add(firstLine.Substring(charNo, Math.Min(columns[i].Length, firstLine.Length - charNo)).Trim());
-									charNo += columns[i].Length + 1;
+									columnNames.Add(firstLine.Substring(charNo, Math.Min(columnLength, firstLine.Length - charNo)).Trim());
+									charNo += columnLength + 1;
 								}
+
+								WriteColumnNames(writer, columnNames);
 								
-								for (int i = 0; i < columnNames.Count; i++)
-								{
-									writer.Write(columnNames[i]);
-									if (i < columnNames.Count - 1)
-										writer.Write(",");
-								}
-								writer.WriteLine();
-								int lineNo = 0;
 								while (!reader.EndOfStream)
 								{
 									string line = reader.ReadLine();
-									lineNo++;
 									if (line.Trim().Length == 0)
 										break;
-									ProcessLine(line, reader, writer, columns);
+									ProcessLine(line, reader, writer, columnLengths);
 								}
 							}
 						}
@@ -80,10 +73,21 @@ namespace rpt2csv
 			}
 		}
 
-		private static void ProcessLine( string line, StreamReader reader, StreamWriter writer, string[] columns )
+		private static void WriteColumnNames(StreamWriter writer, List<string> columnNames)
+		{
+			for (int i = 0; i < columnNames.Count; i++)
+			{
+				writer.Write(columnNames[i]);
+				if (i < columnNames.Count - 1)
+					writer.Write(",");
+			}
+			writer.WriteLine();
+		}
+
+		private static void ProcessLine( string line, StreamReader reader, StreamWriter writer, int[] columnLengths )
 		{
 			int charNo = 0;
-			for (int i = 0; i < columns.Length; i++)
+			for (int i = 0; i < columnLengths.Length; i++)
 			{
 				string str = string.Empty;
 				bool success = false;
@@ -91,7 +95,7 @@ namespace rpt2csv
 				{
 					try
 					{
-						str = line.Substring(charNo, Math.Min(columns[i].Length, line.Length - charNo)).Trim();
+						str = line.Substring(charNo, Math.Min(columnLengths[i], line.Length - charNo)).Trim();
 						success = true;
 					}
 					catch
@@ -103,13 +107,11 @@ namespace rpt2csv
 				str = str.Replace("\"", "\"\"");
 				str = '"' + str + '"';
 				writer.Write(str);
-				if (i < columns.Length - 1)
+				if (i < columnLengths.Length - 1)
 					writer.Write(",");
-				charNo += columns[i].Length + 1;
+				charNo += columnLengths[i] + 1;
 			}
 			writer.WriteLine();
 		}
 	}
-
-
 }
