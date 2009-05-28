@@ -20,7 +20,7 @@ namespace rpt2csv
 			if (args.Length > 1)
 				outputPath = args[1];
 			else
-				outputPath = inputPath.Substring(0, inputPath.Length - 3) + ".csv";
+				outputPath = inputPath.Substring(0, inputPath.Length - 4) + ".csv";
 
 			ProcessRPT(inputPath, outputPath);
 
