@@ -8,23 +8,39 @@ namespace rpt2csv
 {
 	class Program
 	{
+		static void OutputUsageText()
+		{
+			System.Console.Out.WriteLine("Usage: rpt2csv [inputfile] [outputfile]");
+		}
+
 		static void Main( string[] args )
 		{
 			if (args.Length < 1 || args.Length > 2)
 			{
-				System.Console.Out.WriteLine("Usage: rpt2csv [inputfile] [outputfile]");
+				OutputUsageText();
 				return;
 			}
 			string inputPath = args[0];
 			string outputPath = String.Empty;
 			if (args.Length > 1)
 				outputPath = args[1];
+			else if (inputPath.Length < 4)
+			{
+				OutputUsageText();
+				return;
+			}
 			else
 				outputPath = inputPath.Substring(0, inputPath.Length - 4) + ".csv";
 
-			ProcessRPT(inputPath, outputPath);
+			if (File.Exists(outputPath))
+			{
+				System.Console.Out.Write("The file " + outputPath + " already exists.  Overwrite? (Y/N)");
+				char c = (char)System.Console.In.Read();
+				if (c != 'Y' && c != 'y')
+					return;
+			}
 
-			System.Console.Out.WriteLine("Success!");
+			ProcessRPT(inputPath, outputPath);
 		}
 
 		private static void ProcessRPT(string inputPath, string outputPath)
@@ -66,10 +82,15 @@ namespace rpt2csv
 						}
 					}
 				}
+				System.Console.Out.WriteLine("Success!");
 			}
 			catch (FileNotFoundException)
 			{
-				System.Console.Out.WriteLine(inputPath + " not found!");
+				System.Console.Out.WriteLine("File \"" + inputPath + "\" not found!");
+			}
+			catch (IOException e)
+			{
+				System.Console.Out.WriteLine("IO error: " + e.Message);
 			}
 			catch (UnauthorizedAccessException)
 			{
